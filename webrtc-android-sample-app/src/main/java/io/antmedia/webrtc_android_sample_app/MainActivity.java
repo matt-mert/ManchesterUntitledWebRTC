@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
                 rightPlayer.start();
                 serverData = "NONE";
             }
-            Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT).show();
             soundHandler.postDelayed(this, 1000);
             soundRunning = false;
         }
@@ -390,9 +390,9 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
                                         String str = receivedData.replaceAll("\\D+","");
                                         if (!str.isEmpty()) {
                                             distance = Integer.parseInt(str);
-                                            if (distance < 15) {
-                                                sendTextMessage("CLOSE");
-                                            }
+                                            // if (distance < 20) {
+                                            //   sendTextMessage("CLOSE");
+                                            // }
                                         }
                                     }
                                 }
