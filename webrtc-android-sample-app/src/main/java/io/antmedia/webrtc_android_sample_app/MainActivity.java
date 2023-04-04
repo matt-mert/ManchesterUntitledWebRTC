@@ -8,8 +8,10 @@ import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.Manifest;
 import android.media.MediaPlayer;
+import android.media.MediaController2;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,6 +47,8 @@ import org.webrtc.DataChannel;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -72,7 +76,10 @@ import static io.antmedia.webrtcandroidframework.apprtc.CallActivity.EXTRA_VIDEO
 
 public class MainActivity extends AppCompatActivity implements IWebRTCListener, IDataChannelObserver {
 
-    private String deneme = "Started";
+    private String serverData = "NONE";
+    private int distance = 150;
+    private boolean soundRunning = false;
+    private boolean welcomeSound = false;
 
     /**
      * Change this address with your Ant Media Server address
@@ -95,6 +102,11 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     private static final UUID HC05_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothDevice hc05Device;
     private BluetoothSocket btSocket;
+
+    private MediaPlayer welcomePlayer;
+    private MediaPlayer beepPlayer;
+    private MediaPlayer leftPlayer;
+    private MediaPlayer rightPlayer;
 
     private WebRTCClient webRTCClient;
 
@@ -125,9 +137,54 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     private Runnable toastRunnable = new Runnable() {
         @Override
         public void run() {
-            Toast.makeText(MainActivity.this, deneme, Toast.LENGTH_SHORT).show();
-            sendTextMessage(deneme);
-            toastHandler.postDelayed(this, 5000); // 5000 milliseconds = 5 seconds
+            // Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT).show();
+
+            toastHandler.postDelayed(this, 2000);
+        }
+    };
+
+    private Handler welcomeHandler = new Handler();
+    private Runnable welcomeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (welcomeSound) {
+                welcomePlayer.start();
+                welcomeSound = false;
+            }
+            welcomeHandler.postDelayed(this, 4000);
+        }
+    };
+
+    private Handler beepHandler = new Handler();
+    private Runnable beepRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!soundRunning) {
+                if (distance < 20) {
+                    beepPlayer.start();
+                    distance = 150;
+                }
+                beepHandler.postDelayed(this, 500);
+            }
+        }
+    };
+
+    private Handler soundHandler = new Handler();
+    private Runnable soundRunnable = new Runnable() {
+        @Override
+        public void run() {
+            soundRunning = true;
+            if (serverData.contains("LEFT")) {
+                leftPlayer.start();
+                serverData = "NONE";
+            }
+            else if (serverData.contains("RIGHT")) {
+                rightPlayer.start();
+                serverData = "NONE";
+            }
+            Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT).show();
+            soundHandler.postDelayed(this, 1000);
+            soundRunning = false;
         }
     };
 
@@ -161,6 +218,9 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         hc05Device = bluetoothAdapter.getRemoteDevice("00:22:09:01:4A:D1");
 
         toastHandler.post(toastRunnable);
+        welcomeHandler.post(welcomeRunnable);
+        beepHandler.post(beepRunnable);
+        soundHandler.post(soundRunnable);
 
         cameraViewRenderer = findViewById(R.id.camera_view_renderer);
         pipViewRenderer = findViewById(R.id.pip_view_renderer);
@@ -232,6 +292,11 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
        // this.getIntent().putExtra(CallActivity.EXTRA_VIDEO_FPS, 24);
         webRTCClient.init(SERVER_URL, streamId, webRTCMode, tokenId, this.getIntent());
         webRTCClient.setDataChannelObserver(this);
+
+        welcomePlayer = MediaPlayer.create(this, R.raw.welcome);
+        beepPlayer = MediaPlayer.create(this, R.raw.beep);
+        leftPlayer = MediaPlayer.create(this, R.raw.look_left);
+        rightPlayer = MediaPlayer.create(this, R.raw.look_right);
     }
 
     private void connectToBluetoothModule() {
@@ -312,8 +377,24 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(MainActivity.this, "Received: " + receivedData, Toast.LENGTH_SHORT).show();
-                                    sendTextMessage(receivedData);
+                                    if(receivedData.contains("SIGN")) {
+                                        sendTextMessage("SIGN");
+                                    }
+                                    else if (receivedData.contains("CROSS")){
+                                        sendTextMessage("CROSS");
+                                    }
+                                    else if (receivedData.contains("CANCEL")){
+                                        sendTextMessage("CANCEL");
+                                    }
+                                    else if (receivedData.contains("Distance")){
+                                        String str = receivedData.replaceAll("\\D+","");
+                                        if (!str.isEmpty()) {
+                                            distance = Integer.parseInt(str);
+                                            if (distance < 15) {
+                                                sendTextMessage("CLOSE");
+                                            }
+                                        }
+                                    }
                                 }
                             });
                         } catch (IOException e) {
@@ -389,6 +470,7 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         }
 
         startReceivingData();
+        welcomeSound = true;
     }
 
     private void attempt2Reconnect() {
@@ -450,6 +532,9 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         super.onStop();
         webRTCClient.stopStream();
         toastHandler.removeCallbacks(toastRunnable);
+        welcomeHandler.removeCallbacks(welcomeRunnable);
+        beepHandler.removeCallbacks(beepRunnable);
+        soundHandler.removeCallbacks(soundRunnable);
     }
 
     @Override
@@ -606,7 +691,7 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     public void onMessage(DataChannel.Buffer buffer, String dataChannelLabel) {
         ByteBuffer data = buffer.data;
         String messageText = new String(data.array(), StandardCharsets.UTF_8);
-        deneme = messageText;
+        serverData = messageText;
         // Toast.makeText(this, "New Message: " + messageText, Toast.LENGTH_LONG).show();
     }
 
@@ -617,8 +702,7 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
             final byte[] bytes = new byte[data.capacity()];
             data.get(bytes);
             String messageText = new String(bytes, StandardCharsets.UTF_8);
-
-            Toast.makeText(this, "Message is sent", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Message is sent", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Could not send the text message", Toast.LENGTH_LONG).show();
         }
