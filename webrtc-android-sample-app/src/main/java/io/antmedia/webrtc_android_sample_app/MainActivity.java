@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     /**
      * Change this address with your Ant Media Server address
      */
-    public static final String SERVER_ADDRESS = "18.185.39.30:5080";
+    public static final String SERVER_ADDRESS = "mert.damgoai.com:5443";
 
     /**
      * Mode can Publish, Play or P2P
@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
 
     private boolean enableDataChannel = true;
 
-    public static final String SERVER_URL = "ws://" + SERVER_ADDRESS + "/WebRTCAppEE/websocket";
-    public static final String REST_URL = "http://" + SERVER_ADDRESS + "/WebRTCAppEE/rest/v2";
+    public static final String SERVER_URL = "wss://" + SERVER_ADDRESS + "/WebRTCAppEE/websocket";
+    public static final String REST_URL = "https://" + SERVER_ADDRESS + "/WebRTCAppEE/rest/v2";
 
     private static final int PERMISSION_REQUEST_CODE = 100;
     private final static int REQUEST_ENABLE_BT = 1;
