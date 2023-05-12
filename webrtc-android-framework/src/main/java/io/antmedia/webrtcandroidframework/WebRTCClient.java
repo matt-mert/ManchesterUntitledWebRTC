@@ -120,7 +120,7 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     private int videoOutWidth, videoOutHeight;
     private String errorString = null;
     private String streamMode;
-    private boolean openFrontCamera = true;
+    private boolean openFrontCamera = false;
     private VideoCapturer videoCapturer;
 
     private VideoTrack localVideoTrack;

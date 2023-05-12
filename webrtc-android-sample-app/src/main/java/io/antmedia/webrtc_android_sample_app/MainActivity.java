@@ -12,6 +12,7 @@ import android.content.res.AssetFileDescriptor;
 import android.Manifest;
 import android.media.MediaPlayer;
 import android.media.MediaController2;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,7 +55,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.io.IOException;
@@ -77,9 +81,11 @@ import static io.antmedia.webrtcandroidframework.apprtc.CallActivity.EXTRA_VIDEO
 public class MainActivity extends AppCompatActivity implements IWebRTCListener, IDataChannelObserver {
 
     private String serverData = "NONE";
+    private Queue<MediaPlayer> mediaPlayerQueue;
+    private MediaPlayer temp;
     private int distance = 150;
-    private boolean soundRunning = false;
     private boolean welcomeSound = false;
+    private boolean bluetoothBool = false;
 
     /**
      * Change this address with your Ant Media Server address
@@ -107,6 +113,66 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     private MediaPlayer beepPlayer;
     private MediaPlayer leftPlayer;
     private MediaPlayer rightPlayer;
+    private MediaPlayer connectedPlayer;
+    private MediaPlayer a10001Player;
+    private MediaPlayer a10010Player;
+    private MediaPlayer a10011Player;
+    private MediaPlayer a11000Player;
+    private MediaPlayer a11001Player;
+    private MediaPlayer a11010Player;
+    private MediaPlayer a11011Player;
+    private MediaPlayer a1a100Player;
+    private MediaPlayer a1a101Player;
+    private MediaPlayer a1a110Player;
+    private MediaPlayer a1a111Player;
+    private MediaPlayer a20Player;
+    private MediaPlayer a21Player;
+    private MediaPlayer a30aPlayer;
+    private MediaPlayer a31aPlayer;
+    private MediaPlayer a32aPlayer;
+    private MediaPlayer a33aPlayer;
+    private MediaPlayer a34aPlayer;
+    private MediaPlayer a35aPlayer;
+    private MediaPlayer a36aPlayer;
+    private MediaPlayer a37aPlayer;
+    private MediaPlayer a38aPlayer;
+    private MediaPlayer a39aPlayer;
+    private MediaPlayer a310aPlayer;
+    private MediaPlayer a311aPlayer;
+    private MediaPlayer a312aPlayer;
+    private MediaPlayer a313aPlayer;
+    private MediaPlayer a314aPlayer;
+    private MediaPlayer a315aPlayer;
+    private MediaPlayer a316aPlayer;
+    private MediaPlayer a317aPlayer;
+    private MediaPlayer a318aPlayer;
+    private MediaPlayer a319aPlayer;
+    private MediaPlayer a3a0Player;
+    private MediaPlayer a3a1Player;
+    private MediaPlayer a3a2Player;
+    private MediaPlayer a3a3Player;
+    private MediaPlayer a3a4Player;
+    private MediaPlayer a3a5Player;
+    private MediaPlayer a3a6Player;
+    private MediaPlayer a3a7Player;
+    private MediaPlayer a3a8Player;
+    private MediaPlayer a3a9Player;
+    private MediaPlayer a3a10Player;
+    private MediaPlayer a3a11Player;
+    private MediaPlayer a3a12Player;
+    private MediaPlayer a3a13Player;
+    private MediaPlayer a3a14Player;
+    private MediaPlayer a3cancelPlayer;
+    private MediaPlayer a40Player;
+    private MediaPlayer a41Player;
+    private MediaPlayer a42Player;
+    private MediaPlayer a51Player;
+    private MediaPlayer a5cancelPlayer;
+    private MediaPlayer a61Player;
+    private MediaPlayer a6cancelPlayer;
+    private MediaPlayer a70Player;
+    private MediaPlayer a71Player;
+    private MediaPlayer a7cancelPlayer;
 
     private WebRTCClient webRTCClient;
 
@@ -159,13 +225,11 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     private Runnable beepRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!soundRunning) {
-                if (distance < 20) {
-                    beepPlayer.start();
-                    distance = 150;
-                }
-                beepHandler.postDelayed(this, 500);
+            if (distance < 51) {
+                beepPlayer.start();
+                distance = 150;
             }
+            beepHandler.postDelayed(this, 500);
         }
     };
 
@@ -173,18 +237,21 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
     private Runnable soundRunnable = new Runnable() {
         @Override
         public void run() {
-            soundRunning = true;
-            if (serverData.contains("LEFT")) {
-                leftPlayer.start();
-                serverData = "NONE";
+            if (mediaPlayerQueue.isEmpty()) {
+                soundHandler.postDelayed(this, 100);
+                return;
             }
-            else if (serverData.contains("RIGHT")) {
-                rightPlayer.start();
-                serverData = "NONE";
+
+            if (temp != null && temp.isPlaying()) {
+                soundHandler.postDelayed(this, 100);
+                return;
             }
-           // Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT).show();
-            soundHandler.postDelayed(this, 1000);
-            soundRunning = false;
+
+            temp = mediaPlayerQueue.remove();
+            temp.start();
+
+            // Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT).show();
+            soundHandler.postDelayed(this, 100);
         }
     };
 
@@ -297,6 +364,68 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         beepPlayer = MediaPlayer.create(this, R.raw.beep);
         leftPlayer = MediaPlayer.create(this, R.raw.look_left);
         rightPlayer = MediaPlayer.create(this, R.raw.look_right);
+        connectedPlayer = MediaPlayer.create(this, R.raw.connected);
+        a10001Player = MediaPlayer.create(this, R.raw.a10001);
+        a10010Player = MediaPlayer.create(this, R.raw.a10010);
+        a10011Player = MediaPlayer.create(this, R.raw.a10011);
+        a11000Player = MediaPlayer.create(this, R.raw.a11000);
+        a11001Player = MediaPlayer.create(this, R.raw.a11001);
+        a11010Player = MediaPlayer.create(this, R.raw.a11010);
+        a11011Player = MediaPlayer.create(this, R.raw.a11011);
+        a1a100Player = MediaPlayer.create(this, R.raw.a1a100);
+        a1a101Player = MediaPlayer.create(this, R.raw.a1a101);
+        a1a110Player = MediaPlayer.create(this, R.raw.a1a110);
+        a1a111Player = MediaPlayer.create(this, R.raw.a1a111);
+        a20Player = MediaPlayer.create(this, R.raw.a20);
+        a21Player = MediaPlayer.create(this, R.raw.a21);
+        a30aPlayer = MediaPlayer.create(this, R.raw.a30a);
+        a31aPlayer = MediaPlayer.create(this, R.raw.a31a);
+        a32aPlayer = MediaPlayer.create(this, R.raw.a32a);
+        a33aPlayer = MediaPlayer.create(this, R.raw.a33a);
+        a34aPlayer = MediaPlayer.create(this, R.raw.a34a);
+        a35aPlayer = MediaPlayer.create(this, R.raw.a35a);
+        a36aPlayer = MediaPlayer.create(this, R.raw.a36a);
+        a37aPlayer = MediaPlayer.create(this, R.raw.a37a);
+        a38aPlayer = MediaPlayer.create(this, R.raw.a38a);
+        a39aPlayer = MediaPlayer.create(this, R.raw.a39a);
+        a310aPlayer = MediaPlayer.create(this, R.raw.a310a);
+        a311aPlayer = MediaPlayer.create(this, R.raw.a311a);
+        a312aPlayer = MediaPlayer.create(this, R.raw.a312a);
+        a313aPlayer = MediaPlayer.create(this, R.raw.a313a);
+        a314aPlayer = MediaPlayer.create(this, R.raw.a314a);
+        a315aPlayer = MediaPlayer.create(this, R.raw.a315a);
+        a316aPlayer = MediaPlayer.create(this, R.raw.a316a);
+        a317aPlayer = MediaPlayer.create(this, R.raw.a317a);
+        a318aPlayer = MediaPlayer.create(this, R.raw.a318a);
+        a319aPlayer = MediaPlayer.create(this, R.raw.a319a);
+        a3a0Player = MediaPlayer.create(this, R.raw.a3a0);
+        a3a1Player = MediaPlayer.create(this, R.raw.a3a1);
+        a3a2Player = MediaPlayer.create(this, R.raw.a3a2);
+        a3a3Player = MediaPlayer.create(this, R.raw.a3a3);
+        a3a4Player = MediaPlayer.create(this, R.raw.a3a4);
+        a3a5Player = MediaPlayer.create(this, R.raw.a3a5);
+        a3a6Player = MediaPlayer.create(this, R.raw.a3a6);
+        a3a7Player = MediaPlayer.create(this, R.raw.a3a7);
+        a3a8Player = MediaPlayer.create(this, R.raw.a3a8);
+        a3a9Player = MediaPlayer.create(this, R.raw.a3a9);
+        a3a10Player = MediaPlayer.create(this, R.raw.a3a10);
+        a3a11Player = MediaPlayer.create(this, R.raw.a3a11);
+        a3a12Player = MediaPlayer.create(this, R.raw.a3a12);
+        a3a13Player = MediaPlayer.create(this, R.raw.a3a13);
+        a3a14Player = MediaPlayer.create(this, R.raw.a3a14);
+        a3cancelPlayer = MediaPlayer.create(this, R.raw.a3cancel);
+        a40Player = MediaPlayer.create(this, R.raw.a40);
+        a41Player = MediaPlayer.create(this, R.raw.a41);
+        a42Player = MediaPlayer.create(this, R.raw.a42);
+        a51Player = MediaPlayer.create(this, R.raw.a51);
+        a5cancelPlayer = MediaPlayer.create(this, R.raw.a5cancel);
+        a61Player = MediaPlayer.create(this, R.raw.a61);
+        a6cancelPlayer = MediaPlayer.create(this, R.raw.a6cancel);
+        a70Player = MediaPlayer.create(this, R.raw.a70);
+        a71Player = MediaPlayer.create(this, R.raw.a71);
+        a7cancelPlayer = MediaPlayer.create(this, R.raw.a7cancel);
+
+        mediaPlayerQueue = new LinkedList<MediaPlayer>();
     }
 
     private void connectToBluetoothModule() {
@@ -451,9 +580,34 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         webRTCClient.switchCamera();
     }
 
+    public void pressSignButton(View v) {
+        sendTextMessage("SIGN");
+    }
+
+    public void pressCrossButton(View v) {
+        sendTextMessage("CROSS");
+    }
+
+    public void pressCancelButton(View v) {
+        sendTextMessage("CANCEL");
+    }
+
+    public void toggleBluetoothButton(View v) {
+        if (bluetoothBool) {
+            bluetoothBool = false;
+            ((Button) v).setText("BLUETOOTH ON");
+        }
+        else {
+            bluetoothBool = true;
+            ((Button) v).setText("BLUETOOTH OFF");
+        }
+    }
+
     public void startStreaming(View v) {
 
-        connectToBluetoothModule();
+        if (bluetoothBool) {
+            connectToBluetoothModule();
+        }
 
         if (!webRTCClient.isStreaming()) {
             ((Button) v).setText("Stop " + operationName);
@@ -466,7 +620,12 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         else {
             ((Button)v).setText("Start " + operationName);
             webRTCClient.stopStream();
+            toastHandler.removeCallbacks(toastRunnable);
+            welcomeHandler.removeCallbacks(welcomeRunnable);
+            beepHandler.removeCallbacks(beepRunnable);
+            soundHandler.removeCallbacks(soundRunnable);
             stoppedStream = true;
+            return;
         }
 
         startReceivingData();
@@ -524,7 +683,7 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
 
     @Override
     public void onError(String description, String streamId) {
-        Toast.makeText(this, "Error: "  +description , Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Error: " + description , Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -692,7 +851,162 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
         ByteBuffer data = buffer.data;
         String messageText = new String(data.array(), StandardCharsets.UTF_8);
         serverData = messageText;
-        // Toast.makeText(this, "New Message: " + messageText, Toast.LENGTH_LONG).show();
+        String[] strArray = messageText.split(":");
+        // Toast.makeText(this, "F:" + strArray[0], Toast.LENGTH_LONG).show();
+        if (Objects.equals(strArray[0], "1")) {
+            // IDLE STATE
+            if (Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    Objects.equals(strArray[3], "0") && !Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a10001Player);
+            } else if (Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    !Objects.equals(strArray[3], "0") && Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a10010Player);
+            } else if (Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    !Objects.equals(strArray[3], "0") && !Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a10011Player);
+            } else if (!Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    Objects.equals(strArray[3], "0") && Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a11000Player);
+            } else if (!Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    Objects.equals(strArray[3], "0") && !Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a11001Player);
+            } else if (!Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    !Objects.equals(strArray[3], "0") && Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a11010Player);
+            } else if (!Objects.equals(strArray[1], "0") && Objects.equals(strArray[2], "0") &&
+                    !Objects.equals(strArray[3], "0") && !Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a11011Player);
+            } else if (!Objects.equals(strArray[2], "0") &&
+                    Objects.equals(strArray[3], "0") && Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a1a100Player);
+            } else if (!Objects.equals(strArray[2], "0") &&
+                    Objects.equals(strArray[3], "0") && !Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a1a101Player);
+            } else if (!Objects.equals(strArray[2], "0") &&
+                    !Objects.equals(strArray[3], "0") && Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a1a110Player);
+            } else if (!Objects.equals(strArray[2], "0") &&
+                    !Objects.equals(strArray[3], "0") && !Objects.equals(strArray[4], "0")) {
+                mediaPlayerQueue.add(a1a111Player);
+            }
+            // SIGN_CHECK STATE
+        } else if (Objects.equals(strArray[0], "2")) {
+            if (Objects.equals(strArray[1], "0")) {
+                mediaPlayerQueue.add(a20Player);
+            } else if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.add(a21Player);
+            }
+            // SIGN_MAIN STATE
+        } else if (Objects.equals(strArray[0], "3")) {
+            if (Objects.equals(strArray[1], "0")) {
+                mediaPlayerQueue.add(a30aPlayer);
+            } else if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.add(a31aPlayer);
+            } else if (Objects.equals(strArray[1], "2")) {
+                mediaPlayerQueue.add(a32aPlayer);
+            } else if (Objects.equals(strArray[1], "3")) {
+                mediaPlayerQueue.add(a33aPlayer);
+            } else if (Objects.equals(strArray[1], "4")) {
+                mediaPlayerQueue.add(a34aPlayer);
+            } else if (Objects.equals(strArray[1], "5")) {
+                mediaPlayerQueue.add(a35aPlayer);
+            } else if (Objects.equals(strArray[1], "6")) {
+                mediaPlayerQueue.add(a36aPlayer);
+            } else if (Objects.equals(strArray[1], "7")) {
+                mediaPlayerQueue.add(a37aPlayer);
+            } else if (Objects.equals(strArray[1], "8")) {
+                mediaPlayerQueue.add(a38aPlayer);
+            } else if (Objects.equals(strArray[1], "9")) {
+                mediaPlayerQueue.add(a39aPlayer);
+            } else if (Objects.equals(strArray[1], "10")) {
+                mediaPlayerQueue.add(a310aPlayer);
+            } else if (Objects.equals(strArray[1], "11")) {
+                mediaPlayerQueue.add(a311aPlayer);
+            } else if (Objects.equals(strArray[1], "12")) {
+                mediaPlayerQueue.add(a312aPlayer);
+            } else if (Objects.equals(strArray[1], "13")) {
+                mediaPlayerQueue.add(a313aPlayer);
+            } else if (Objects.equals(strArray[1], "14")) {
+                mediaPlayerQueue.add(a314aPlayer);
+            } else if (Objects.equals(strArray[1], "15")) {
+                mediaPlayerQueue.add(a315aPlayer);
+            } else if (Objects.equals(strArray[1], "16")) {
+                mediaPlayerQueue.add(a316aPlayer);
+            } else if (Objects.equals(strArray[1], "17")) {
+                mediaPlayerQueue.add(a317aPlayer);
+            } else if (Objects.equals(strArray[1], "18")) {
+                mediaPlayerQueue.add(a318aPlayer);
+            } else if (Objects.equals(strArray[1], "19")) {
+                mediaPlayerQueue.add(a319aPlayer);
+            } else if (Objects.equals(strArray[1], "CANCEL")) {
+                mediaPlayerQueue.add(a3cancelPlayer);
+            }
+            if (!Objects.equals(strArray[1], "CANCEL")) {
+                if (Objects.equals(strArray[2], "0")) {
+                    mediaPlayerQueue.add(a3a0Player);
+                } else if (Objects.equals(strArray[2], "1")) {
+                    mediaPlayerQueue.add(a3a1Player);
+                } else if (Objects.equals(strArray[2], "2")) {
+                    mediaPlayerQueue.add(a3a2Player);
+                } else if (Objects.equals(strArray[2], "3")) {
+                    mediaPlayerQueue.add(a3a3Player);
+                } else if (Objects.equals(strArray[2], "4")) {
+                    mediaPlayerQueue.add(a3a4Player);
+                } else if (Objects.equals(strArray[2], "5")) {
+                    mediaPlayerQueue.add(a3a5Player);
+                } else if (Objects.equals(strArray[2], "6")) {
+                    mediaPlayerQueue.add(a3a6Player);
+                } else if (Objects.equals(strArray[2], "7")) {
+                    mediaPlayerQueue.add(a3a7Player);
+                } else if (Objects.equals(strArray[2], "8")) {
+                    mediaPlayerQueue.add(a3a8Player);
+                } else if (Objects.equals(strArray[2], "9")) {
+                    mediaPlayerQueue.add(a3a9Player);
+                } else if (Objects.equals(strArray[2], "10")) {
+                    mediaPlayerQueue.add(a3a10Player);
+                } else if (Objects.equals(strArray[2], "11")) {
+                    mediaPlayerQueue.add(a3a11Player);
+                } else if (Objects.equals(strArray[2], "12")) {
+                    mediaPlayerQueue.add(a3a12Player);
+                } else if (Objects.equals(strArray[2], "13")) {
+                    mediaPlayerQueue.add(a3a13Player);
+                } else if (Objects.equals(strArray[2], "14")) {
+                    mediaPlayerQueue.add(a3a14Player);
+                }
+            }
+            // CROSS_CHECK STATE
+        } else if (Objects.equals(strArray[0], "4")) {
+            if (Objects.equals(strArray[1], "0")) {
+                mediaPlayerQueue.add(a40Player);
+            } else if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.add(a41Player);
+            } else if (Objects.equals(strArray[1], "2")) {
+                mediaPlayerQueue.add(a42Player);
+            }
+            // CROSS_AHEAD STATE
+        } else if (Objects.equals(strArray[0], "5")) {
+            if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.add(a51Player);
+            } else if (Objects.equals(strArray[1], "CANCEL")) {
+                mediaPlayerQueue.add(a5cancelPlayer);
+            }
+            // CROSS_HERE STATE
+        } else if (Objects.equals(strArray[0], "6")) {
+            if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.add(a61Player);
+            } else if (Objects.equals(strArray[1], "CANCEL")) {
+                mediaPlayerQueue.add(a6cancelPlayer);
+            }
+            // DETECTION STATE
+        } else if (Objects.equals(strArray[0], "7")) {
+            if (Objects.equals(strArray[1], "0")) {
+                mediaPlayerQueue.add(a70Player);
+            } else if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.add(a71Player);
+            } else if (Objects.equals(strArray[1], "CANCEL")) {
+                mediaPlayerQueue.add(a7cancelPlayer);
+            }
+        }
     }
 
     @Override
