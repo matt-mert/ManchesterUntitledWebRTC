@@ -1000,10 +1000,13 @@ public class MainActivity extends AppCompatActivity implements IWebRTCListener, 
             // DETECTION STATE
         } else if (Objects.equals(strArray[0], "7")) {
             if (Objects.equals(strArray[1], "0")) {
+                mediaPlayerQueue.clear();
                 mediaPlayerQueue.add(a70Player);
             } else if (Objects.equals(strArray[1], "1")) {
+                mediaPlayerQueue.clear();
                 mediaPlayerQueue.add(a71Player);
             } else if (Objects.equals(strArray[1], "CANCEL")) {
+                mediaPlayerQueue.clear();
                 mediaPlayerQueue.add(a7cancelPlayer);
             }
         }
